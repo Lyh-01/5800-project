@@ -7,6 +7,8 @@ import threading
 # Spell checker uses 2009 Webster's English Dictionary
 # https://github.com/matthewreagan/WebstersEnglishDictionary/tree/master
 
+# 1,000 Most Common English words
+
 # make sure to update the dictionary.json for your relative file path
 
 
@@ -61,7 +63,7 @@ def check_text():
     words = input_text.split()
     results = []
     for word in words: # Read the text box word by word
-        if word.lower() not in keys:
+        if word.lower() not in all_words:
             matches = get_similar_words(root, word.lower())
             if matches:
                 results.append(f"'{word}' is misspelled. Suggestions: {', '.join(matches[:5])}")
@@ -76,18 +78,39 @@ def check_text():
 
 # Function to load dictionary and build tree
 def load_dictionary():
-    global root, tree, keys
+    global root, tree, all_words
     try:
         with open('CS5800/dictionary.json', 'r') as file:
             data = json.load(file)
-        keys = list(data.keys())
+        with open('CS5800/common.json', 'r') as file2:
+            common = json.load(file2)
+
+        common_words = common['commonWords'] 
+
+        dict_words = list(data.keys())
+        all_words = set()
+
         root = Node()
         tree = [root]
-        for word in keys:
-            temp = Node(word)
-            add_node(root, temp)
-            if (word == keys[len(keys)//2]):
+
+        # Add commonWords first
+        # 1000 most common english words at the top of the tree
+        for word in common_words:
+            if word not in all_words:
+                temp = Node(word)
+                add_node(root, temp)
+                all_words.add(word)
+
+        # Add remaining dict_words
+        for word in dict_words:
+            if word not in all_words:
+                temp = Node(word)
+                add_node(root, temp)
+                all_words.add(word)
+            if (word == dict_words[len(dict_words)//2]):
                 loading_label.config(text="Building Burkhard-Keller Tree Dictionary...")
+                
+        all_words = list(all_words)
             
         loading_label.config(text="Dictionary loaded successfully!")
         loading_window.after(10, open_spell_checker)
