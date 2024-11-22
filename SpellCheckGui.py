@@ -47,7 +47,7 @@ def edit_distance(word1, word2):
     return dp[m][n]
 
 # Function to get similar words
-def get_similar_words(root, s, tolerance=2):
+def get_similar_words(root, s, tolerance=1):
     if not root or not root.word:
         return []
     dist = edit_distance(root.word, s)
@@ -63,10 +63,10 @@ def check_text():
     words = input_text.split()
     results = []
     for word in words: # Read the text box word by word
-        if word.lower() not in all_words:
+        if word.lower() not in all_words:  # O(1) dictionary lookup
             matches = get_similar_words(root, word.lower())
             if matches:
-                results.append(f"'{word}' is misspelled. Suggestions: {', '.join(matches[:5])}")
+                results.append(f"'{word}' is misspelled. Suggestions: {', '.join(matches[:])}")
             else:
                 results.append(f"'{word}' is misspelled. No suggestions found.")
         else:
