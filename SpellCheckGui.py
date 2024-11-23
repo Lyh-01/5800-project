@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter as tk
 from tkinter import scrolledtext
 import json
 import threading
@@ -57,16 +56,30 @@ def get_similar_words(root, s, tolerance=1):
             like_words.extend(get_similar_words(tree[root.next[i]], s, tolerance))
     return like_words
 
+
+
+# Function to increase tolerance
+def increase_tolerance():
+    tolerance.set(tolerance.get() + 1)
+    tolerance_label.config(text=f"Tolerance: {tolerance.get()}")
+
+# Function to decrease tolerance
+def decrease_tolerance():
+    if tolerance.get() > 0:  # Prevent negative tolerance
+        tolerance.set(tolerance.get() - 1)
+        tolerance_label.config(text=f"Tolerance: {tolerance.get()}")
+
 # Function to check text
 def check_text():
     input_text = input_box.get("1.0", tk.END).strip()
     words = input_text.split()
     results = []
-    for word in words: # Read the text box word by word
+    current_tolerance = tolerance.get()
+    for word in words:  # Read the text box word by word
         if word.lower() not in all_words:  # O(1) dictionary lookup
-            matches = get_similar_words(root, word.lower())
+            matches = get_similar_words(root, word.lower(), tolerance=current_tolerance)
             if matches:
-                results.append(f"'{word}' is misspelled. Suggestions: {', '.join(matches[:])}")
+                results.append(f"'{word}' is misspelled. Suggestions: {', '.join(matches)}")
             else:
                 results.append(f"'{word}' is misspelled. No suggestions found.")
         else:
@@ -134,6 +147,24 @@ def open_spell_checker():
 
     check_button = tk.Button(spell_checker_window, text="Check Spelling", command=check_text)
     check_button.pack()
+
+    # Add global tolerance variable
+    global tolerance
+    tolerance = tk.IntVar(value=1)
+
+    # Add tolerance controls
+    tolerance_controls = tk.Frame(spell_checker_window)
+    tolerance_controls.pack(pady=10)
+
+    decrease_button = tk.Button(tolerance_controls, text="Decrease Tolerance", command=decrease_tolerance)
+    decrease_button.grid(row=0, column=0, padx=5)
+
+    global tolerance_label
+    tolerance_label = tk.Label(tolerance_controls, text=f"Tolerance: {tolerance.get()}")
+    tolerance_label.grid(row=0, column=1, padx=5)
+
+    increase_button = tk.Button(tolerance_controls, text="Increase Tolerance", command=increase_tolerance)
+    increase_button.grid(row=0, column=2, padx=5)
 
     result_label = tk.Label(spell_checker_window, text="Results:")
     result_label.pack()
