@@ -3,6 +3,8 @@ from tkinter import scrolledtext
 import json
 import threading
 
+import string
+
 # Spell checker uses 2009 Webster's English Dictionary
 # https://github.com/matthewreagan/WebstersEnglishDictionary/tree/master
 
@@ -72,7 +74,12 @@ def decrease_tolerance():
 # Function to check text
 def check_text():
     input_text = input_box.get("1.0", tk.END).strip()
-    words = input_text.split()
+    
+    # Remove punctuation
+    cleaned_text = input_text.translate(str.maketrans('', '', string.punctuation))
+    # Split into words
+    words = cleaned_text.split()
+    
     results = []
     current_tolerance = tolerance.get()
     for word in words:  # Read the text box word by word
