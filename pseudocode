@@ -1,0 +1,112 @@
+START
+
+  // Define the Node class for the tree structure
+  CLASS Node:
+    FUNCTION initialize:
+      word = None
+      next = an empty dictionary
+
+  // Function to add a node to the tree
+  FUNCTION add_node(root, current_node):
+    IF root's word = empty:
+      root's word = current_node's word
+      RETURN
+    distance = edit_distance(root's word, current_node's word)
+    IF distance is NOT in root's next:
+      ADD current_node to the tree
+      root.next[distance] = index of current_node in the tree
+    ELSE:
+      CALL add_node on the child node in root.next
+
+  // Function to compute the edit distance between two words
+  FUNCTION edit_distance(word1, word2):
+    m = length of word1
+    n = length of word2
+    INITIALIZE dp as a 2D array with size (m + 1) x (n + 1)
+    FOR i = 0 to m:
+      dp[i][0] = i
+    FOR j = 0 to n:
+      dp[0][j] = j
+    FOR i = 1 to m:
+      FOR j = 1 to n:
+        IF word1[i-1] = word2[j-1]:
+          dp[i][j] = dp[i-1][j-1]
+        ELSE:
+          dp[i][j] = MIN(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1
+    RETURN dp[m][n]
+
+  // Function to get similar words from the tree
+  FUNCTION get_similar_words(root, word, tolerance):
+    INITIALIZE similar_words = an empty list
+    distance = edit_distance(root's word, word)
+    IF distance <= tolerance:
+      ADD root's word to similar_words
+    FOR each distance in root.next within tolerance:
+      CALL get_similar_words recursively and add results to similar_words
+    RETURN similar_words
+
+  // Increase the tolerance value
+  FUNCTION increase_tolerance:
+    tolerance = tolerance + 1
+    UPDATE the tolerance label with tolerance
+
+  // Decrease the tolerance value
+  FUNCTION decrease_tolerance:
+    IF tolerance > 0:
+      tolerance = tolerance - 1
+      UPDATE the tolerance label with tolerance
+
+  // Function to check the text input by the user
+  FUNCTION check_text:
+    input_text = get text from the input box
+    REMOVE punctuation from input_text
+    words = SPLIT input_text into words
+    INITIALIZE results as an empty list
+    current_tolerance = tolerance
+    FOR each word in words:
+      IF word is NOT in dictionary:
+        matches = get_similar_words(root, word, tolerance=current_tolerance)
+        IF matches is NOT empty:
+          ADD "word is misspelled. Suggestions: matches" to results
+        ELSE:
+          ADD "word is misspelled. No suggestions found." to results
+      ELSE:
+        ADD "word is correct." to results
+    DISPLAY results in the result box
+
+  // Function to load the dictionary and prepare the tree structure
+  FUNCTION load_dictionary:
+    TRY:
+      OPEN dictionary file and LOAD data
+      OPEN common words file and LOAD common words
+      root = new Node()
+      tree = [root]
+      ADD common words to tree
+      ADD remaining dictionary words to tree
+      loading message = "Building Burkhard-Keller Tree Dictionary..."
+      FOR each word in dictionary:
+        IF word is half-done:
+          UPDATE loading message
+      loading message = "Dictionary loaded successfully!"
+      CALL open_spell_checker
+    EXCEPT FileNotFoundError:
+      loading message = "Dictionary file not found."
+    EXCEPT JSONDecodeError:
+      loading message = "Error in dictionary file format."
+
+  // Function to open the spell checker GUI
+  FUNCTION open_spell_checker:
+    CLOSE loading window
+    CREATE new spell checker window
+    ADD input box for text
+    ADD button for checking spelling
+    ADD result box for displaying results
+    ADD buttons to adjust tolerance
+    START the GUI event loop
+
+  // Main program:
+  CREATE loading window to show loading status
+  START thread to load the dictionary
+  RUN event loop for loading window
+
+END
